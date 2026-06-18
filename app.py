@@ -7,7 +7,7 @@ import streamlit as st
 
 from utils.data_manager import ensure_data_files
 from utils import gsheets_backend as GS
-from components.ui import load_css
+from components.ui import inject_pwa_meta, load_css
 
 st.set_page_config(
     page_title="Fitness RPG Tracker",
@@ -21,6 +21,7 @@ st.set_page_config(
 ensure_data_files()
 
 load_css()
+inject_pwa_meta()
 
 pages = [
     st.Page("pages/dashboard.py", title="Dashboard", icon="🏠", default=True),
