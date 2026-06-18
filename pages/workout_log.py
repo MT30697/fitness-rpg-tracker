@@ -12,8 +12,12 @@ from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
 from utils import rpg_engine as RPG
+from utils import workout_actions as WA
 
 page_header("Workout Log", "💪", "Log your sets, chase PRs, beat last time.")
+
+st.page_link("pages/workout_templates.py", label="🗂️ Tập theo lịch cố định? Dùng Workout Templates để log nhanh hơn", icon=None)
+st.write("")
 
 library_df = DM.load_exercise_library()
 workout_df = DM.load_workout_log()
@@ -48,36 +52,17 @@ with st.expander("➕ Log Workout Entry", expanded=True):
             if not exercise:
                 st.error("Please select or enter an exercise.")
             else:
-                volume = calc.calc_volume(sets, reps, weight)
-                est_1rm = calc.calc_est_1rm(weight, reps)
+                result = WA.log_workout_entry(
+                    log_date, muscle_choice, exercise, sets, reps, weight, rpe, notes,
+                    workout_df=workout_df,
+                )
+                volume, est_1rm = result["volume"], result["est_1rm"]
+                broken_prs, overload_status = result["broken_prs"], result["overload_status"]
+                xp_result, pr_xp = result["xp_result"], result["pr_xp"]
 
-                prior_prs = calc.get_prs_for_exercise(workout_df, exercise)
-                overload_status = calc.detect_progressive_overload(workout_df, exercise, volume)
-                broken_prs = calc.check_new_pr(prior_prs, weight, reps, volume, est_1rm)
-
-                row = {
-                    "log_id": DM.generate_id(),
-                    "date": log_date.isoformat(),
-                    "muscle_group": muscle_choice,
-                    "exercise": exercise,
-                    "sets": sets,
-                    "reps": reps,
-                    "weight": weight,
-                    "rpe": rpe,
-                    "notes": notes.strip(),
-                    "volume": volume,
-                    "est_1rm": est_1rm,
-                    "is_pr": bool(broken_prs),
-                    "created_at": DM.now_iso(),
-                }
-                DM.append_csv_row(C.WORKOUT_LOG_FILE, row, C.WORKOUT_LOG_COLUMNS)
-
-                xp_result = RPG.award_xp("workout_logged")
                 st.success(f"Workout saved. Volume: {volume} | Est. 1RM: {est_1rm} kg (+100 XP)")
 
-                pr_xp = {"leveled_up": False}
                 if broken_prs:
-                    pr_xp = RPG.award_xp("new_pr")
                     st.balloons()
                     st.success(f"🏆 NEW PR! Broke: {', '.join(broken_prs)} (+200 XP)")
 
@@ -86,24 +71,9 @@ with st.expander("➕ Log Workout Entry", expanded=True):
                 if xp_result["leveled_up"] or pr_xp["leveled_up"]:
                     st.success(f"🎉 LEVEL UP! You are now Level {RPG.load_rpg_state()['level']}")
 
-                # Achievement / streak context
-                refreshed = DM.load_workout_log()
-                refreshed["date_only"] = pd.to_datetime(refreshed["date"], errors="coerce").dt.date
-                streak = calc.compute_streak(refreshed["date_only"].tolist())
-                total_prs = int(refreshed["is_pr"].astype(str).str.lower().eq("true").sum()) if "is_pr" in refreshed else 0
-                workouts_this_week = refreshed[
-                    refreshed["date_only"] >= (date.today() - pd.Timedelta(days=date.today().weekday()))
-                ]["date_only"].nunique()
-
-                unlocked = RPG.check_achievements({
-                    "total_workouts": refreshed["date_only"].nunique(),
-                    "workout_streak": streak,
-                    "total_prs": total_prs,
-                })
+                unlocked = WA.post_log_achievements_check()
                 for ach in unlocked:
                     st.success(f"🏅 Achievement Unlocked: {ach['name']}!")
-
-                RPG.maybe_award_weekly_goal(workouts_this_week)
 
                 st.rerun()
 

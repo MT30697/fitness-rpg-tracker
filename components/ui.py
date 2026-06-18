@@ -55,6 +55,7 @@ def inject_pwa_meta() -> None:
             }
             tag.setAttribute("content", m.content);
         });
+        parent.document.title = "Fitness RPG Tracker";
 
         var iconHref = "data:image/png;base64,__ICON_B64__";
         [

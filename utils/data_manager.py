@@ -62,6 +62,8 @@ def ensure_data_files() -> None:
                 for a in C.ACHIEVEMENT_DEFS
             }
             GS.write_kv(C.ACHIEVEMENTS_FILE.stem, achievements)
+        if not GS.read_kv(C.WORKOUT_TEMPLATES_FILE.stem, {}):
+            GS.write_kv(C.WORKOUT_TEMPLATES_FILE.stem, dict(C.DEFAULT_WORKOUT_TEMPLATES))
         return
 
     C.DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -87,6 +89,9 @@ def ensure_data_files() -> None:
             for a in C.ACHIEVEMENT_DEFS
         }
         save_json(C.ACHIEVEMENTS_FILE, achievements)
+
+    if not C.WORKOUT_TEMPLATES_FILE.exists():
+        save_json(C.WORKOUT_TEMPLATES_FILE, dict(C.DEFAULT_WORKOUT_TEMPLATES))
 
 
 def _ensure_csv(path, columns: list[str]) -> None:
@@ -205,6 +210,33 @@ def save_settings(settings: dict) -> None:
 
 def load_exercise_library() -> pd.DataFrame:
     return load_csv(C.EXERCISE_LIBRARY_FILE, C.EXERCISE_LIBRARY_COLUMNS)
+
+
+def load_workout_templates() -> dict:
+    return load_json(C.WORKOUT_TEMPLATES_FILE, C.DEFAULT_WORKOUT_TEMPLATES)
+
+
+def save_workout_templates(templates: dict) -> None:
+    save_json(C.WORKOUT_TEMPLATES_FILE, templates)
+
+
+def ensure_exercises_in_library(exercises: list[dict]) -> None:
+    """Auto-add any of these {exercise_name, muscle_group} pairs to the
+    Exercise Library if not already present, so they also show up in the
+    normal Workout Log dropdown. Used when seeding/using templates."""
+    library_df = load_exercise_library()
+    existing = set(library_df["exercise_name"].str.lower()) if not library_df.empty else set()
+    for ex in exercises:
+        if ex["exercise_name"].lower() not in existing:
+            append_csv_row(C.EXERCISE_LIBRARY_FILE, {
+                "exercise_id": generate_id(),
+                "exercise_name": ex["exercise_name"],
+                "muscle_group": ex["muscle_group"],
+                "equipment": "Other",
+                "notes": "",
+                "created_at": now_iso(),
+            }, C.EXERCISE_LIBRARY_COLUMNS)
+            existing.add(ex["exercise_name"].lower())
 
 
 def load_workout_log() -> pd.DataFrame:

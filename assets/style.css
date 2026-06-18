@@ -215,6 +215,21 @@ h1, h2, h3, h4 {
     padding: 10px 6px calc(10px + env(safe-area-inset-bottom, 0px)) 6px;
 }
 
+/* Streamlit stacks st.columns() vertically on narrow (phone-width)
+   viewports by default — fine for normal page content, but it breaks a
+   tab bar. Force this specific container's columns to stay in one row. */
+.st-key-bottom_tab_bar [data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 0 !important;
+}
+.st-key-bottom_tab_bar [data-testid="column"],
+.st-key-bottom_tab_bar [data-testid="stColumn"] {
+    width: auto !important;
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+}
+
 .st-key-bottom_tab_bar [data-testid="stPageLink"] {
     display: flex;
     justify-content: center;

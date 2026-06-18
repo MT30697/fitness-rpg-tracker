@@ -30,6 +30,7 @@ pages = [
     st.Page("pages/dashboard.py", title="Dashboard", icon="🏠", default=True),
     st.Page("pages/exercise_library.py", title="Exercise Library", icon="📚"),
     st.Page("pages/workout_log.py", title="Workout Log", icon="💪"),
+    st.Page("pages/workout_templates.py", title="Workout Templates", icon="🗂️"),
     st.Page("pages/cardio.py", title="Cardio", icon="🏃"),
     st.Page("pages/nutrition.py", title="Nutrition", icon="🍽️"),
     st.Page("pages/body_progress.py", title="Body Progress", icon="📈"),

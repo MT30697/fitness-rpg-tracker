@@ -17,6 +17,7 @@ ASSETS_DIR = BASE_DIR / "assets"
 SETTINGS_FILE = DATA_DIR / "settings.json"
 ACHIEVEMENTS_FILE = DATA_DIR / "achievements.json"
 RPG_STATE_FILE = DATA_DIR / "rpg_state.json"
+WORKOUT_TEMPLATES_FILE = DATA_DIR / "workout_templates.json"
 
 EXERCISE_LIBRARY_FILE = DATA_DIR / "exercise_library.csv"
 WORKOUT_LOG_FILE = DATA_DIR / "workout_log.csv"
@@ -165,4 +166,83 @@ MODULE_LABELS = {
     "nutrition": "NUTRITION",
     "body": "BODY",
     "rpg": "LEVEL",
+}
+
+# ----------------------------------------------------------------------
+# Workout templates (default workout_templates.json content)
+# A template = a saved day's exercise list with target sets/reps, so the
+# Workout Templates page can quick-log a whole session instead of picking
+# exercises one at a time. Seeded from the user's own 6-day plan; weight
+# is intentionally left for them to fill in each time since it changes.
+# ----------------------------------------------------------------------
+def _ex(name, muscle_group, sets, reps_default, reps_display):
+    return {
+        "exercise_name": name, "muscle_group": muscle_group,
+        "sets": sets, "reps_default": reps_default, "reps_display": reps_display,
+    }
+
+
+DEFAULT_WORKOUT_TEMPLATES = {
+    "day2_pull": {
+        "name": "Day 2 — Pull (Lưng + Biceps)",
+        "exercises": [
+            _ex("Machine Row ngang", "Back", 3, 8, "6-10"),
+            _ex("Chest supported Row", "Back", 3, 10, "8-12"),
+            _ex("Neutral Grip Lat Pulldown", "Back", 3, 10, "8-12"),
+            _ex("Straight Arm Pulldown", "Back", 3, 13, "12-15"),
+            _ex("Face Pull", "Shoulders", 3, 15, "12-20"),
+            _ex("Rear Delt Machine", "Shoulders", 3, 15, "12-20"),
+            _ex("Incline DB Curl", "Arms", 3, 10, "8-12"),
+            _ex("Rope Hammer Curl", "Arms", 3, 12, "10-15"),
+        ],
+    },
+    "day3_push": {
+        "name": "Day 3 — Push (Ngực + Vai + Triceps)",
+        "exercises": [
+            _ex("Incline DB Press", "Chest", 4, 8, "6-10"),
+            _ex("Incline Chest Press Machine", "Chest", 3, 10, "8-12"),
+            _ex("Cable Fly", "Chest", 3, 13, "12-15"),
+            _ex("Machine Shoulder Press", "Shoulders", 3, 8, "6-10"),
+            _ex("Cable Lateral Raise", "Shoulders", 3, 15, "12-20"),
+            _ex("DB Lateral Raise", "Shoulders", 3, 15, "12-20"),
+            _ex("Rope Pushdown", "Arms", 3, 12, "10-15"),
+            _ex("Overhead Cable Extension", "Arms", 3, 12, "10-15"),
+        ],
+    },
+    "day4_core": {
+        "name": "Day 4 — Core (+ Cardio Zone 2 riêng ở trang Cardio)",
+        "exercises": [
+            _ex("Cable Crunch", "Core", 3, 13, "12-15"),
+            _ex("Hanging Knee Raise", "Core", 3, 12, "10-15"),
+            _ex("Plank", "Core", 3, 60, "45-75s"),
+        ],
+    },
+    "day5_legs_arms": {
+        "name": "Day 5 — Legs + Arms",
+        "exercises": [
+            _ex("Seated Leg Curl", "Legs", 3, 12, "10-15"),
+            _ex("Leg Press", "Legs", 4, 10, "8-12"),
+            _ex("Hip Thrust Machine / Smith", "Legs", 3, 10, "8-12"),
+            _ex("Leg Extension", "Legs", 3, 13, "12-15"),
+            _ex("Seated Calf Raise", "Legs", 4, 15, "12-20"),
+            _ex("Bayesian Cable Curl", "Arms", 3, 12, "10-15"),
+            _ex("Incline DB Curl", "Arms", 3, 10, "8-12"),
+            _ex("Rope Hammer Curl", "Arms", 3, 12, "10-15"),
+            _ex("Rope Pushdown", "Arms", 3, 12, "10-15"),
+        ],
+    },
+    "day6_upper_aesthetic": {
+        "name": "Day 6 — Upper Aesthetic (V-Taper)",
+        "exercises": [
+            _ex("Assisted Pull-up / Pulldown", "Back", 3, 8, "6-10"),
+            _ex("Machine Chest Press", "Chest", 3, 10, "8-12"),
+            _ex("Machine Row ngang", "Back", 3, 10, "8-12"),
+            _ex("Incline Cable Fly", "Chest", 3, 13, "12-15"),
+            _ex("Machine Shoulder Press", "Shoulders", 3, 8, "6-10"),
+            _ex("Cable Lateral Raise", "Shoulders", 3, 15, "12-20"),
+            _ex("DB Lateral Raise", "Shoulders", 3, 15, "12-20"),
+            _ex("Rear Delt Machine", "Shoulders", 3, 15, "12-20"),
+            _ex("Cable Y Raise", "Shoulders", 3, 13, "12-15"),
+        ],
+    },
 }

@@ -7,6 +7,10 @@ from utils import gsheets_backend as GS
 page_header("More", "🧩")
 
 st.markdown('<div class="more-row">', unsafe_allow_html=True)
+st.page_link("pages/workout_templates.py", label="🗂️  Workout Templates", icon=None)
+st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown('<div class="more-row">', unsafe_allow_html=True)
 st.page_link("pages/exercise_library.py", label="📚  Exercise Library", icon=None)
 st.markdown("</div>", unsafe_allow_html=True)
 
