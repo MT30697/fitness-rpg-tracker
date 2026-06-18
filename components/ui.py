@@ -195,7 +195,7 @@ _TAB_DEFS = [
     ("workout", "🏋️", "Workout", "pages/workout_log.py"),
     ("cardio", "🏃", "Cardio", "pages/cardio.py"),
     ("nutrition", "🍽️", "Nutrition", "pages/nutrition.py"),
-    ("more", "⋯", "More", "pages/more.py"),
+    ("more", "🧩", "More", "pages/more.py"),
 ]
 
 

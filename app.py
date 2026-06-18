@@ -35,7 +35,7 @@ pages = [
     st.Page("pages/body_progress.py", title="Body Progress", icon="📈"),
     st.Page("pages/rpg_system.py", title="RPG System", icon="🎮"),
     st.Page("pages/settings_page.py", title="Settings", icon="⚙️"),
-    st.Page("pages/more.py", title="More", icon="⋯"),
+    st.Page("pages/more.py", title="More", icon="🧩"),
 ]
 
 try:
