@@ -139,34 +139,29 @@ elif st.session_state["selected_template"] is not None and st.session_state["sel
         submitted = st.form_submit_button("✅ Lưu toàn bộ buổi tập", use_container_width=True)
 
         if submitted:
-            logged_count = 0
-            total_xp = 0
-            all_prs = []
-            any_level_up = False
+            entries = []
             for i, ex in enumerate(tpl["exercises"]):
                 sets_val, reps_val, weight_val = weight_inputs[i]
                 if weight_val <= 0:
                     continue
-                result = WA.log_workout_entry(
-                    log_date, ex["muscle_group"], ex["exercise_name"],
-                    sets_val, reps_val, weight_val, rpe, "",
-                    workout_df=workout_df,
-                )
-                logged_count += 1
-                total_xp += 100
-                if result["broken_prs"]:
-                    total_xp += 200
-                    all_prs.extend(f"{ex['exercise_name']} ({p})" for p in result["broken_prs"])
-                any_level_up = any_level_up or result["xp_result"]["leveled_up"] or result["pr_xp"]["leveled_up"]
+                entries.append((log_date, ex["muscle_group"], ex["exercise_name"], sets_val, reps_val, weight_val, rpe, ""))
 
-            if logged_count == 0:
+            if not entries:
                 st.warning("Chưa nhập cân nặng cho bài nào — không có gì được log.")
             else:
+                batch_result = WA.log_workout_entries_batch(entries, workout_df=workout_df)
+                logged_count = len(entries)
+                total_xp = batch_result["xp_result"]["amount_awarded"]
+                all_prs = [
+                    f"{r['exercise']} ({', '.join(r['broken_prs'])})"
+                    for r in batch_result["per_exercise"] if r["broken_prs"]
+                ]
+
                 st.success(f"Đã log {logged_count} bài tập (+{total_xp} XP).")
                 if all_prs:
                     st.balloons()
                     st.success(f"🏆 PR mới: {', '.join(all_prs)}")
-                if any_level_up:
+                if batch_result["xp_result"]["leveled_up"]:
                     st.success(f"🎉 LÊN CẤP! Bạn đang ở Level {RPG.load_rpg_state()['level']}")
 
                 unlocked = WA.post_log_achievements_check()

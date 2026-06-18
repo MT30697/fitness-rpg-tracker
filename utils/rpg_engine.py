@@ -31,23 +31,39 @@ def award_xp(reason_key: str, custom_amount: Optional[int] = None) -> dict:
     """Award XP for a given reason key (must exist in C.XP_RULES unless a
     custom_amount is supplied). Persists state and returns updated level info
     plus whether a level-up occurred."""
-    state = DM.load_json(C.RPG_STATE_FILE, C.DEFAULT_RPG_STATE)
-    amount = custom_amount if custom_amount is not None else C.XP_RULES.get(reason_key, 0)
+    return award_xp_batch([reason_key], custom_amount=custom_amount)
 
+
+def award_xp_batch(reason_keys: list[str], custom_amount: Optional[int] = None) -> dict:
+    """Award XP for several reasons at once in a single read+write — use
+    this instead of calling award_xp() in a loop (e.g. logging a whole
+    template's worth of exercises), since each award_xp call is its own
+    read+write round trip and looping it can hit Google Sheets API rate
+    limits fast."""
+    if not reason_keys:
+        return {**get_level_info(load_rpg_state().get("xp", 0)), "leveled_up": False, "amount_awarded": 0}
+
+    state = DM.load_json(C.RPG_STATE_FILE, C.DEFAULT_RPG_STATE)
     old_level = get_level_info(state.get("xp", 0))["level"]
-    state["xp"] = int(state.get("xp", 0)) + int(amount)
+
+    total_amount = 0
+    today_str = date.today().isoformat()
+    xp_log = state.setdefault("xp_log", [])
+    for reason_key in reason_keys:
+        amount = custom_amount if custom_amount is not None else C.XP_RULES.get(reason_key, 0)
+        total_amount += amount
+        xp_log.append({"date": today_str, "amount": amount, "reason": reason_key})
+
+    state["xp"] = int(state.get("xp", 0)) + int(total_amount)
     new_info = get_level_info(state["xp"])
     state["level"] = new_info["level"]
-
-    log_entry = {"date": date.today().isoformat(), "amount": amount, "reason": reason_key}
-    state.setdefault("xp_log", []).append(log_entry)
 
     DM.save_json(C.RPG_STATE_FILE, state)
 
     return {
         **new_info,
         "leveled_up": new_info["level"] > old_level,
-        "amount_awarded": amount,
+        "amount_awarded": total_amount,
     }
 
 

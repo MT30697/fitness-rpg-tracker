@@ -127,9 +127,20 @@ def load_csv(path, columns: list[str]) -> pd.DataFrame:
 
 
 def append_csv_row(path, row: dict[str, Any], columns: list[str]) -> None:
+    append_csv_rows(path, [row], columns)
+
+
+def append_csv_rows(path, rows: list[dict[str, Any]], columns: list[str]) -> None:
+    """Append several rows in a single read+write round trip. Use this
+    instead of calling append_csv_row in a loop — each append_csv_row
+    call is its own Google Sheets API write, and looping it (e.g. adding
+    a whole template's worth of exercises at once) can hit API rate
+    limits fast."""
+    if not rows:
+        return
     df = load_csv(path, columns)
-    new_row = pd.DataFrame([{c: row.get(c) for c in columns}])
-    df = pd.concat([df, new_row], ignore_index=True)
+    new_rows = pd.DataFrame([{c: row.get(c) for c in columns} for row in rows])
+    df = pd.concat([df, new_rows], ignore_index=True)
     if GS.is_enabled():
         GS.write_df(path.stem, df, columns)
     else:
@@ -223,20 +234,25 @@ def save_workout_templates(templates: dict) -> None:
 def ensure_exercises_in_library(exercises: list[dict]) -> None:
     """Auto-add any of these {exercise_name, muscle_group} pairs to the
     Exercise Library if not already present, so they also show up in the
-    normal Workout Log dropdown. Used when seeding/using templates."""
+    normal Workout Log dropdown. Used when seeding/using templates. Writes
+    all missing exercises in a single batch call (not one call per
+    exercise) to avoid hitting Google Sheets API rate limits."""
     library_df = load_exercise_library()
     existing = set(library_df["exercise_name"].str.lower()) if not library_df.empty else set()
+    to_add = []
     for ex in exercises:
         if ex["exercise_name"].lower() not in existing:
-            append_csv_row(C.EXERCISE_LIBRARY_FILE, {
+            to_add.append({
                 "exercise_id": generate_id(),
                 "exercise_name": ex["exercise_name"],
                 "muscle_group": ex["muscle_group"],
                 "equipment": "Other",
                 "notes": "",
                 "created_at": now_iso(),
-            }, C.EXERCISE_LIBRARY_COLUMNS)
+            })
             existing.add(ex["exercise_name"].lower())
+    if to_add:
+        append_csv_rows(C.EXERCISE_LIBRARY_FILE, to_add, C.EXERCISE_LIBRARY_COLUMNS)
 
 
 def load_workout_log() -> pd.DataFrame:
