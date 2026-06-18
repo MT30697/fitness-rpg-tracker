@@ -4,7 +4,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
-from components.ui import achievement_tile, level_ring, page_header, progress_bar
+from components.ui import achievement_tile, bottom_tab_bar, level_ring, page_header, progress_bar
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -100,3 +100,5 @@ all_sorted = unlocked_list + locked_list
 for i, ach in enumerate(all_sorted):
     with grid_cols[i % 5]:
         achievement_tile(ach["name"], ach["icon"], ach["description"], ach.get("unlocked", False), ach.get("unlocked_date"))
+
+bottom_tab_bar(active="more")

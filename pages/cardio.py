@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import page_header
+from components.ui import bottom_tab_bar, page_header
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -125,3 +125,5 @@ else:
     fig = px.pie(by_type, names="type", values="duration", hole=0.45)
     fig.update_layout(template="plotly_dark", height=320, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig, use_container_width=True)
+
+bottom_tab_bar(active="cardio")

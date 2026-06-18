@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import page_header
+from components.ui import bottom_tab_bar, page_header
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -168,3 +168,5 @@ else:
         bdf.sort_values("date", ascending=False)[["date", "weight", "waist", "body_fat", "notes"]],
         use_container_width=True, hide_index=True,
     )
+
+bottom_tab_bar(active="more")

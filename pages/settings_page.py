@@ -5,7 +5,8 @@ from datetime import date, datetime
 
 import streamlit as st
 
-from components.ui import page_header
+from components.ui import bottom_tab_bar, page_header
+from utils import gsheets_backend as GS
 from utils import constants as C
 from utils import data_manager as DM
 
@@ -100,4 +101,7 @@ with st.form("schedule_form"):
         st.rerun()
 
 st.divider()
-st.caption("All data is stored locally in the `data/` folder as CSV and JSON files. No cloud sync, no external accounts.")
+storage_label = "📡 Data syncs to Google Sheets." if GS.is_enabled() else "💾 Data is stored locally on this device as CSV/JSON files."
+st.caption(storage_label)
+
+bottom_tab_bar(active="more")

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from components.ui import page_header
+from components.ui import bottom_tab_bar, page_header
 from utils import constants as C
 from utils import data_manager as DM
 
@@ -122,3 +122,5 @@ else:
                             st.session_state["editing_exercise_id"] = None
                             st.rerun()
                 st.markdown("<hr style='margin:4px 0; border-color:rgba(255,255,255,0.18);'>", unsafe_allow_html=True)
+
+bottom_tab_bar(active="more")

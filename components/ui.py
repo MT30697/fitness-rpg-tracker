@@ -82,16 +82,28 @@ def page_header(title: str, icon: str = "", subtitle: str = "") -> None:
     st.write("")
 
 
+_MODULE_ICONS = {
+    "workout": "🏋️",
+    "cardio": "🏃",
+    "nutrition": "🍽️",
+    "body": "⚖️",
+    "score": "⭐",
+}
+
+
 def metric_card(label: str, value: str, sub: str = "", module: str | None = None) -> None:
-    """module: an optional category name (e.g. 'workout', 'cardio') shown as
-    a small uppercase tag at the top of the card. In the black/white theme,
-    category is signalled by this text tag rather than by color."""
-    tag_html = f"<div class='rpg-card-tag'>{module.upper()}</div>" if module else ""
+    """module: an optional category ('workout' | 'cardio' | 'nutrition' |
+    'body' | 'score') shown as a small colored icon badge at the top of
+    the card, matching iOS Health/Fitness-style tiles."""
+    icon_html = ""
+    if module:
+        icon = _MODULE_ICONS.get(module, "•")
+        icon_html = f"<div class='rpg-card-tag rpg-card-tag--{module}'>{icon}</div>"
     sub_html = f"<div class='rpg-metric-sub'>{sub}</div>" if sub else ""
     st.markdown(
         f"""
         <div class="rpg-card">
-            {tag_html}
+            {icon_html}
             <div class="rpg-metric-label">{label}</div>
             <div class="rpg-metric-value">{value}</div>
             {sub_html}
@@ -101,7 +113,14 @@ def metric_card(label: str, value: str, sub: str = "", module: str | None = None
     )
 
 
-def progress_bar(label: str, value: float, max_value: float, suffix: str = "") -> None:
+def progress_bar(label: str, value: float, max_value: float, suffix: str = "", color: str = "blue") -> None:
+    """color: 'blue' | 'green' | 'red' | 'purple' | 'yellow' — maps to the
+    same category palette used elsewhere in the app."""
+    color_map = {
+        "blue": "var(--blue)", "green": "var(--green)", "red": "var(--red)",
+        "purple": "var(--purple)", "yellow": "var(--yellow)",
+    }
+    fill = color_map.get(color, "var(--blue)")
     max_value = max_value or 1
     pct = max(0, min(100, (value / max_value) * 100))
     st.markdown(
@@ -109,10 +128,10 @@ def progress_bar(label: str, value: float, max_value: float, suffix: str = "") -
         <div style="margin-bottom:10px;">
             <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:{C.THEME_COLORS['text']};">
                 <span>{label}</span>
-                <span style="font-family:'JetBrains Mono', monospace;">{value:.0f}{suffix} / {max_value:.0f}{suffix}</span>
+                <span style="color:{C.THEME_COLORS['muted']};">{value:.0f}{suffix} / {max_value:.0f}{suffix}</span>
             </div>
             <div class="rpg-progress-wrap">
-                <div class="rpg-progress-fill" style="width:{pct}%;"></div>
+                <div class="rpg-progress-fill" style="width:{pct}%; background:{fill};"></div>
             </div>
         </div>
         """,
@@ -169,6 +188,44 @@ def level_ring(level: int, xp_into_level: int, xp_per_level: int, total_xp: int,
         """,
         unsafe_allow_html=True,
     )
+
+
+_TAB_DEFS = [
+    ("dashboard", "🏠", "Dashboard", "pages/dashboard.py"),
+    ("workout", "🏋️", "Workout", "pages/workout_log.py"),
+    ("cardio", "🏃", "Cardio", "pages/cardio.py"),
+    ("nutrition", "🍽️", "Nutrition", "pages/nutrition.py"),
+    ("more", "⋯", "More", "pages/more.py"),
+]
+
+
+def bottom_tab_bar(active: str) -> None:
+    """The app's primary navigation: a fixed bottom tab bar with 5 items.
+    Exercise Library, Body Progress, RPG System, and Settings live behind
+    the "more" tab (call with active="more" from those pages too, so the
+    tab bar still shows where you are).
+
+    active: 'dashboard' | 'workout' | 'cardio' | 'nutrition' | 'more'
+
+    Built from real st.page_link calls (not raw <a> tags) so Streamlit's
+    own page routing keeps working — only the current tab is rendered as
+    plain non-clickable text instead of a self-link."""
+    with st.container(key="bottom_tab_bar"):
+        cols = st.columns(5)
+        for col, (key, icon, label, path) in zip(cols, _TAB_DEFS):
+            with col:
+                if key == active:
+                    st.markdown(
+                        f"""
+                        <div class="tab-item">
+                            <div class="tab-icon">{icon}</div>
+                            <div class="tab-label">{label}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.page_link(path, label=label, icon=icon)
 
 
 def achievement_tile(name: str, icon: str, description: str, unlocked: bool, unlocked_date: str | None) -> None:

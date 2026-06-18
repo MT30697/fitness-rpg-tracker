@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import page_header, render_badges, status_to_style
+from components.ui import bottom_tab_bar, page_header, render_badges, status_to_style
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -176,3 +176,5 @@ if not workout_df.empty:
         st.plotly_chart(fig, use_container_width=True)
 else:
     st.info("No workouts logged yet. Use the form above to log your first one.")
+
+bottom_tab_bar(active="workout")

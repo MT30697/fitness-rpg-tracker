@@ -8,7 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from components.ui import level_ring, metric_card, page_header, progress_bar, render_badges, status_to_style
+from components.ui import bottom_tab_bar, level_ring, metric_card, page_header, progress_bar, render_badges, status_to_style
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -239,3 +239,5 @@ with chart_col4:
     )
     fig.update_layout(template="plotly_dark", height=320, margin=dict(l=10, r=10, t=10, b=10))
     st.plotly_chart(fig, use_container_width=True)
+
+bottom_tab_bar(active="dashboard")
