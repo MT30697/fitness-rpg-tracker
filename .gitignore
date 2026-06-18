@@ -1,0 +1,15 @@
+# Personal fitness data — never commit this when running locally.
+data/
+
+# Streamlit secrets — contains your Google service account private key
+# when using the Google Sheets backend. NEVER commit the real file.
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
