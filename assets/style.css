@@ -1,4 +1,4 @@
-/* =========================================================================
+f/* =========================================================================
    Fitness RPG Tracker — "Technical Readout" theme
    Black tone, white hairline borders, sharp edges, corner-bracket framing
    like an instrument panel / schematic HUD. Color is reserved strictly
@@ -14,6 +14,9 @@ footer {visibility: hidden;}
    inside that same header element, so hiding it also hides the only way
    to open the sidebar nav. */
 div[data-testid="stDecoration"] {visibility: hidden;}
+[data-testid="stToolbarActions"] {display: none !important;}
+header a[href*="github.com"] {display: none !important;}
+[data-testid="stStatusWidget"] {display: none !important;}
 
 :root {
     --ink:        #000000;
