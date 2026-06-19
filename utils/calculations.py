@@ -85,7 +85,13 @@ def volume_by_muscle_group(workout_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def volume_trend(workout_df: pd.DataFrame, freq: str = "W") -> pd.DataFrame:
-    """freq='W' weekly, 'M' monthly. Returns columns [period, volume]."""
+    """freq='W' weekly, 'M' monthly. Returns columns [period, volume].
+    Pandas 2.x renamed frequency aliases: 'M' → 'ME', 'W' → 'W' (ok).
+    We normalise here so callers can still pass 'W' or 'M'."""
+    # Map old aliases to pandas 2.x equivalents
+    _FREQ_MAP = {"M": "ME", "MS": "MS", "Q": "QE", "A": "YE", "Y": "YE"}
+    freq = _FREQ_MAP.get(freq.upper(), freq)
+
     if workout_df is None or workout_df.empty:
         return pd.DataFrame(columns=["period", "volume"])
     df = workout_df.copy()
