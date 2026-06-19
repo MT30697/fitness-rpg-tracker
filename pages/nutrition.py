@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header, progress_bar, render_badges, status_to_style
+from components.ui import bottom_tab_bar, decimal_input, page_header, progress_bar, render_badges, status_to_style
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -30,13 +30,13 @@ with st.expander("➕ Log Food Entry", expanded=True):
             meal_type = st.selectbox("Meal Type", C.MEAL_TYPES)
             food_name = st.text_input("Food Name")
         with col2:
-            protein = st.number_input("Protein (g)", min_value=0.0, step=1.0, value=0.0)
-            carbs = st.number_input("Carbs (g)", min_value=0.0, step=1.0, value=0.0)
-            fat = st.number_input("Fat (g)", min_value=0.0, step=1.0, value=0.0)
-        calories = st.number_input(
-            "Calories", min_value=0.0, step=10.0,
-            value=float(round(protein * 4 + carbs * 4 + fat * 9)),
-            help="Defaults to a macro-based estimate; override if you know the real value.",
+            protein = decimal_input("Protein (g)", value=0.0, key="nut_protein")
+            carbs = decimal_input("Carbs (g)", value=0.0, key="nut_carbs")
+            fat = decimal_input("Fat (g)", value=0.0, key="nut_fat")
+        calories = decimal_input(
+            "Calories (hoặc để 0 để tự tính từ macro)",
+            value=0.0,
+            key="nut_calories",
         )
         notes = st.text_input("Notes (optional)")
         submitted = st.form_submit_button("Save Food Entry", use_container_width=True)
@@ -45,6 +45,8 @@ with st.expander("➕ Log Food Entry", expanded=True):
             if not food_name.strip():
                 st.error("Food name is required.")
             else:
+                # Auto-estimate calories from macros if user left it at 0
+                actual_calories = calories if calories > 0 else round(protein * 4 + carbs * 4 + fat * 9, 1)
                 row = {
                     "log_id": DM.generate_id(),
                     "date": log_date.isoformat(),
@@ -53,12 +55,12 @@ with st.expander("➕ Log Food Entry", expanded=True):
                     "protein": protein,
                     "carbs": carbs,
                     "fat": fat,
-                    "calories": calories,
+                    "calories": actual_calories,
                     "notes": notes.strip(),
                     "created_at": DM.now_iso(),
                 }
                 DM.append_csv_row(C.NUTRITION_LOG_FILE, row, C.NUTRITION_LOG_COLUMNS)
-                st.success("Food entry saved.")
+                st.success(f"Saved: {food_name} — {actual_calories:.0f} kcal, {protein:.0f}g protein.")
 
                 refreshed = DM.load_nutrition_log()
                 today_macros = calc.daily_macro_summary(refreshed, log_date)

@@ -76,6 +76,43 @@ def inject_pwa_meta() -> None:
     )
 
 
+def _fmt_decimal(v) -> str:
+    try:
+        v = float(v)
+        return str(int(v)) if v == int(v) else str(v)
+    except (TypeError, ValueError):
+        return "0"
+
+
+def decimal_input(label: str, value: float = 0.0, key: str | None = None, help: str | None = None) -> float:
+    """Phone-keyboard-friendly decimal number input.
+
+    st.number_input uses HTML <input type='number'> which only accepts '.'
+    as the decimal separator, but many phone keyboards (especially on
+    Vietnamese locale) type ',' instead — so '32,5' gets silently dropped
+    and the field shows 0 or stays blank.
+
+    This renders a plain text field and accepts both '32.5' and '32,5'.
+    Works inside and outside st.form blocks."""
+    default_str = _fmt_decimal(value)
+    raw = st.text_input(
+        label,
+        value=default_str,
+        key=key,
+        help=(help or "") + " (nhập số, dùng dấu . hoặc , đều được)",
+        placeholder="vd: 32.5",
+    )
+    raw = (raw or "").strip().replace(",", ".")
+    if not raw:
+        return 0.0
+    try:
+        result = float(raw)
+        return max(0.0, result)
+    except ValueError:
+        st.caption(f"⚠️ '{raw}' không phải số hợp lệ — đang dùng 0.")
+        return 0.0
+
+
 def page_header(title: str, icon: str = "", subtitle: str = "") -> None:
     st.markdown(f"## {icon} {title}" if icon else f"## {title}")
     if subtitle:

@@ -1,24 +1,12 @@
 """
 Optional Google Sheets storage backend.
-
-This is used automatically when the app's `.streamlit/secrets.toml` has a
-`[connections.gsheets]` block configured (the normal setup when deployed
-to Streamlit Community Cloud, since that platform's local filesystem is
-ephemeral and not safe for long-term data). When no such secret exists
-(e.g. running locally on your own machine), `is_enabled()` returns False
-and `data_manager.py` falls back to plain CSV/JSON files instead — this
-module is then never touched.
-
-Every CSV-shaped data file maps to one worksheet (tab) in a single Google
-Sheet, with a matching name (e.g. data/workout_log.csv -> worksheet
-"workout_log"). The three small JSON "documents" (settings, rpg_state,
-achievements) are stored as JSON-encoded strings in a shared two-column
-worksheet called "app_state", one row per document.
+Auto-detected from secrets.toml. Falls back to local CSV/JSON when absent.
+All writes have retry logic and error handling so a transient API hiccup
+won't crash the app.
 """
 from __future__ import annotations
-
 import json
-
+import time
 import pandas as pd
 import streamlit as st
 
@@ -27,7 +15,6 @@ KV_COLUMNS = ["key", "value"]
 
 
 def is_enabled() -> bool:
-    """True when secrets.toml has a [connections.gsheets] block."""
     try:
         return "gsheets" in st.secrets.get("connections", {})
     except Exception:
@@ -45,7 +32,6 @@ def _empty(columns: list[str]) -> pd.DataFrame:
 
 
 def ensure_worksheet(worksheet: str, columns: list[str]) -> None:
-    """Create the worksheet with the right header row if it doesn't exist."""
     conn = _connection()
     try:
         conn.read(worksheet=worksheet, ttl=5)
@@ -53,21 +39,10 @@ def ensure_worksheet(worksheet: str, columns: list[str]) -> None:
         try:
             conn.create(worksheet=worksheet, data=_empty(columns))
         except Exception:
-            # Best-effort: if this also fails (e.g. a real permissions
-            # problem), the next explicit read/write below will raise a
-            # clear error the user can act on instead of failing silently.
             pass
 
 
 def read_df(worksheet: str, columns: list[str], ttl: int = 5) -> pd.DataFrame:
-    """Always returns a DataFrame with exactly `columns`, even if the
-    worksheet is missing or empty — mirrors data_manager.load_csv.
-
-    ttl=5 means repeated reads of the same worksheet within a 5-second
-    window reuse a cached result instead of calling the Sheets API again.
-    Streamlit reruns the whole script on every interaction, and a single
-    page can read 4-5 worksheets, so without this a few page loads will
-    burn through Google's per-minute read quota."""
     conn = _connection()
     try:
         df = conn.read(worksheet=worksheet, ttl=ttl)
@@ -82,10 +57,24 @@ def read_df(worksheet: str, columns: list[str], ttl: int = 5) -> pd.DataFrame:
     return df[columns].reset_index(drop=True)
 
 
-def write_df(worksheet: str, df: pd.DataFrame, columns: list[str]) -> None:
+def write_df(worksheet: str, df: pd.DataFrame, columns: list[str]) -> bool:
+    """Write df to worksheet. Retries once on API rate-limit errors.
+    Returns True on success, False on failure (so callers can handle)."""
     conn = _connection()
     out = df.reindex(columns=columns)
-    conn.update(worksheet=worksheet, data=out)
+    for attempt in range(2):
+        try:
+            conn.update(worksheet=worksheet, data=out)
+            return True
+        except Exception as e:
+            err = str(e).lower()
+            if attempt == 0 and ("quota" in err or "rate" in err or "429" in err or "resource" in err):
+                time.sleep(3)
+                continue
+            # Second failure or non-rate-limit error
+            st.warning(f"⚠️ Could not save to Google Sheets: {e}. Data may not be saved — try again.")
+            return False
+    return False
 
 
 def read_kv(key: str, default: dict) -> dict:

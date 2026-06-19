@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header, render_badges, status_to_style
+from components.ui import bottom_tab_bar, decimal_input, page_header, render_badges, status_to_style
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -43,7 +43,7 @@ with st.expander("➕ Log Workout Entry", expanded=True):
             sets = st.number_input("Sets", min_value=0, step=1, value=3)
         with col2:
             reps = st.number_input("Reps", min_value=0, step=1, value=10)
-            weight = st.number_input("Weight (kg)", min_value=0.0, step=0.5, value=20.0)
+            weight = decimal_input("Weight (kg)", value=20.0, key="wlog_weight")
             rpe = st.slider("RPE", min_value=1, max_value=10, value=7)
         notes = st.text_input("Notes (optional)")
         submitted = st.form_submit_button("Save Workout", use_container_width=True)

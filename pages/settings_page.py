@@ -5,7 +5,7 @@ from datetime import date, datetime
 
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header
+from components.ui import bottom_tab_bar, decimal_input, page_header
 from utils import gsheets_backend as GS
 from utils import constants as C
 from utils import data_manager as DM
@@ -21,11 +21,11 @@ st.markdown("#### User Profile")
 with st.form("profile_form"):
     col1, col2 = st.columns(2)
     with col1:
-        height = st.number_input("Height (cm)", min_value=0.0, step=0.5, value=float(settings.get("height_cm") or 179))
-        current_weight = st.number_input("Current Weight (kg)", min_value=0.0, step=0.1, value=float(settings.get("current_weight_kg") or 86))
-        goal_weight = st.number_input("Goal Weight (kg)", min_value=0.0, step=0.1, value=float(settings.get("goal_weight_kg") or 80))
+        height = decimal_input("Height (cm)", value=float(settings.get("height_cm") or 179), key="set_height")
+        current_weight = decimal_input("Current Weight (kg)", value=float(settings.get("current_weight_kg") or 86), key="set_cw")
+        goal_weight = decimal_input("Goal Weight (kg)", value=float(settings.get("goal_weight_kg") or 80), key="set_gw")
     with col2:
-        waist = st.number_input("Waist (cm, optional)", min_value=0.0, step=0.5, value=float(settings.get("waist_cm") or 0))
+        waist = decimal_input("Waist (cm, optional)", value=float(settings.get("waist_cm") or 0), key="set_waist")
         try:
             default_start = datetime.fromisoformat(settings.get("start_date")).date()
         except Exception:

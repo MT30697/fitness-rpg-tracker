@@ -7,7 +7,7 @@ from datetime import date
 
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header
+from components.ui import bottom_tab_bar, decimal_input, page_header
 from utils import constants as C
 from utils import data_manager as DM
 from utils import rpg_engine as RPG
@@ -133,7 +133,7 @@ elif st.session_state["selected_template"] is not None and st.session_state["sel
             with c3:
                 reps_val = st.number_input("Reps", min_value=0, step=1, value=ex["reps_default"], key=f"tpl_{selected_key}_{i}_reps")
             with c4:
-                weight_val = st.number_input("Kg", min_value=0.0, step=0.5, value=0.0, key=f"tpl_{selected_key}_{i}_weight")
+                weight_val = decimal_input("Kg", value=0.0, key=f"tpl_{selected_key}_{i}_weight")
             weight_inputs[i] = (sets_val, reps_val, weight_val)
 
         submitted = st.form_submit_button("✅ Lưu toàn bộ buổi tập", use_container_width=True)

@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header
+from components.ui import bottom_tab_bar, decimal_input, page_header
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -26,13 +26,13 @@ with st.expander("➕ Log Cardio Session", expanded=True):
         with col1:
             log_date = st.date_input("Date", value=date.today())
             cardio_type = st.selectbox("Type", C.CARDIO_TYPES)
-            duration = st.number_input("Duration (minutes)", min_value=0.0, step=1.0, value=30.0)
-            distance = st.number_input("Distance (km)", min_value=0.0, step=0.1, value=0.0)
+            duration = decimal_input("Duration (minutes)", value=30.0, key="cardio_duration")
+            distance = decimal_input("Distance (km)", value=0.0, key="cardio_distance")
         with col2:
-            speed = st.number_input("Speed (km/h)", min_value=0.0, step=0.1, value=0.0)
-            incline = st.number_input("Incline (%)", min_value=0.0, step=0.5, value=0.0)
+            speed = decimal_input("Speed (km/h)", value=0.0, key="cardio_speed")
+            incline = decimal_input("Incline (%)", value=0.0, key="cardio_incline")
             steps = st.number_input("Steps", min_value=0, step=100, value=0)
-            calories = st.number_input("Calories Burned", min_value=0.0, step=10.0, value=0.0)
+            calories = decimal_input("Calories Burned", value=0.0, key="cardio_calories")
         notes = st.text_input("Notes (optional)")
         submitted = st.form_submit_button("Save Cardio Session", use_container_width=True)
 

@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
-from components.ui import bottom_tab_bar, page_header
+from components.ui import bottom_tab_bar, decimal_input, page_header
 from utils import calculations as calc
 from utils import constants as C
 from utils import data_manager as DM
@@ -26,10 +26,10 @@ with st.expander("➕ Log Body Check-in", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
             log_date = st.date_input("Date", value=date.today())
-            weight = st.number_input("Weight (kg)", min_value=0.0, step=0.1, value=float(settings.get("current_weight_kg") or 0))
+            weight = decimal_input("Weight (kg)", value=float(settings.get("current_weight_kg") or 0), key="body_weight")
         with col2:
-            waist = st.number_input("Waist (cm, optional)", min_value=0.0, step=0.5, value=0.0)
-            body_fat = st.number_input("Body Fat % (optional)", min_value=0.0, step=0.1, value=0.0)
+            waist = decimal_input("Waist (cm, optional)", value=0.0, key="body_waist")
+            body_fat = decimal_input("Body Fat % (optional)", value=0.0, key="body_fat")
         photo = st.file_uploader("Progress Photo (optional)", type=["png", "jpg", "jpeg"])
         notes = st.text_input("Notes (optional)")
         submitted = st.form_submit_button("Save Check-in", use_container_width=True)
